@@ -233,7 +233,7 @@ def to_code(config):
     if CORE.is_esp8266:
         CORE.add_job(_esp8266_add_lwip_type)
 
-    cg.add_build_flag('-fno-exceptions')
+    cg.add_build_flag('-fexceptions')
 
     # Libraries
     if CORE.is_esp32:

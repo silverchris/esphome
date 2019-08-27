@@ -7,6 +7,10 @@
 #include "esphome/components/power_supply/power_supply.h"
 #endif
 
+#ifdef CONFIG_PM_ENABLE
+#include "esp_pm.h"
+#endif
+
 namespace esphome {
 namespace output {
 
@@ -35,6 +39,10 @@ class BinaryOutput {
 #ifdef USE_POWER_SUPPLY
     this->power_.request();
 #endif
+#ifdef CONFIG_PM_ENABLE
+    esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "Output Lock", &this->pm_lock_);
+    esp_pm_lock_acquire(this->pm_lock_);
+#endif
     this->write_state(!this->inverted_);
   }
 
@@ -42,6 +50,10 @@ class BinaryOutput {
   virtual void turn_off() {
 #ifdef USE_POWER_SUPPLY
     this->power_.unrequest();
+#endif
+#ifdef CONFIG_PM_ENABLE
+    esp_pm_lock_release(this->pm_lock_);
+    esp_pm_lock_delete(this->pm_lock_);
 #endif
     this->write_state(this->inverted_);
   }
@@ -57,6 +69,9 @@ class BinaryOutput {
   bool inverted_{false};
 #ifdef USE_POWER_SUPPLY
   power_supply::PowerSupplyRequester power_{};
+#endif
+#ifdef CONFIG_PM_ENABLE
+  esp_pm_lock_handle_t pm_lock_;
 #endif
 };
 

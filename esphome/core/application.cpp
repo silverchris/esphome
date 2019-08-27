@@ -1,6 +1,10 @@
 #include "esphome/core/application.h"
 #include "esphome/core/log.h"
 #include "esphome/core/version.h"
+#include "esp_err.h"
+#include "esp_pm.h"
+#include "soc/rtc.h"
+#include  "freertos/task.h"
 #include "esphome/core/esphal.h"
 
 #ifdef USE_STATUS_LED
@@ -27,6 +31,21 @@ void Application::register_component_(Component *comp) {
 }
 void Application::setup() {
   ESP_LOGI(TAG, "Running through setup()...");
+#if CONFIG_PM_ENABLE
+  ESP_LOGI(TAG, "PM Enabled");
+    // Configure dynamic frequency scaling:
+    // maximum and minimum frequencies are set in sdkconfig,
+    // automatic light sleep is enabled if tickless idle support is enabled.
+    esp_pm_config_esp32_t pm_config;
+            pm_config.max_freq_mhz = 160;
+            pm_config.min_freq_mhz = 40;
+#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
+            pm_config.light_sleep_enable = true;
+	    ESP_LOGI(TAG, "Tickless");
+#endif
+    ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+#endif // CONFIG_PM_ENABLE
+
   ESP_LOGV(TAG, "Sorting components by setup priority...");
   std::stable_sort(this->components_.begin(), this->components_.end(), [](const Component *a, const Component *b) {
     return a->get_actual_setup_priority() > b->get_actual_setup_priority();
