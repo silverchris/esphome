@@ -279,6 +279,19 @@ def write_platformio_ini(content):
     full_file += INI_AUTO_GENERATE_END + content_format[1]
     write_file_if_changed(path, full_file)
 
+def write_sdkconfig_defaults():
+    update_storage_json()
+    dest = CORE.relative_build_path('sdkconfig.defaults')
+    src = os.path.join(CORE.relative_src_path('esphome'), "sdkconfig.defaults")
+    copy_file_if_changed(src, dest)
+
+
+def write_sdkconfig():
+    update_storage_json()
+    src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'core'))
+    copy_file_if_changed(os.path.join(src_path, "sdkconfig.h"), CORE.relative_src_path('sdkconfig.h'))
+    copy_file_if_changed(os.path.join(src_path, "sdkconfig"), CORE.relative_src_path('sdkconfig'))
+
 
 def write_platformio_project():
     mkdir_p(CORE.build_path)
@@ -286,6 +299,7 @@ def write_platformio_project():
     content = get_ini_content()
     write_gitignore()
     write_platformio_ini(content)
+    write_sdkconfig()
 
 
 DEFINES_H_FORMAT = ESPHOME_H_FORMAT = """\
