@@ -2,9 +2,8 @@
 
 #include "esphome/core/component.h"
 
-#ifdef CONFIG_PM_ENABLE
 #include "esp_pm.h"
-#endif
+
 
 namespace esphome {
 namespace pm {
