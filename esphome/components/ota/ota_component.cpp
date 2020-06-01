@@ -12,6 +12,10 @@
 #endif
 #include <StreamString.h>
 
+#ifdef USE_PM
+#include "esphome/components/pm/pm.h"
+#endif
+
 namespace esphome {
 namespace ota {
 
@@ -58,6 +62,11 @@ void OTAComponent::handle_() {
   uint32_t ota_size;
   uint8_t ota_features;
   (void) ota_features;
+#ifdef USE_PM
+  pm::PMLock pm_;
+#endif
+
+
 
   if (!this->client_.connected()) {
     this->client_ = this->server_->available();
@@ -65,6 +74,9 @@ void OTAComponent::handle_() {
     if (!this->client_.connected())
       return;
   }
+#ifdef USE_PM
+  pm_.request();
+#endif
 
   // enable nodelay for outgoing data
   this->client_.setNoDelay(true);
@@ -299,6 +311,9 @@ error:
 
 #ifdef ARDUINO_ARCH_ESP8266
   global_preferences.prevent_write(false);
+#endif
+#ifdef USE_PM
+  pm_.unrequest();
 #endif
 }
 
