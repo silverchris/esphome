@@ -18,9 +18,6 @@ static const char *TAG = "PM";
 void PM::setup() {
 #if CONFIG_PM_ENABLE
   ESP_LOGI(TAG, "PM Support Enabled");
-  // Configure dynamic frequency scaling:
-  // maximum and minimum frequencies are set in sdkconfig,
-  // automatic light sleep is enabled if tickless idle support is enabled.
   esp_pm_config_esp32_t pm_config;
   pm_config.max_freq_mhz = max_freq;
   pm_config.min_freq_mhz = min_freq;
@@ -41,6 +38,17 @@ void PM::setup() {
   ESP_LOGI(TAG, "PM Support Disabled");
 #endif  // CONFIG_PM_ENABLE
   App.set_loop_interval(250);
+  global_pm = this;
+}
+
+void PM::disable(){
+#if CONFIG_PM_ENABLE
+  esp_pm_config_esp32_t pm_config;
+  pm_config.max_freq_mhz = 240;
+  pm_config.min_freq_mhz = 240;
+  pm_config.light_sleep_enable = false;
+  ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+#endif
 }
 
 void PM::set_freq(uint16_t min_freq_mhz, uint16_t max_freq_mhz) {
@@ -71,5 +79,8 @@ void PMLock::unrequest() {
   }
 #endif
 }
+
+PM *global_pm = nullptr;
+
 }  // namespace pm
 }  // namespace esphome

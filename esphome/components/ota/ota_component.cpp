@@ -62,9 +62,6 @@ void OTAComponent::handle_() {
   uint32_t ota_size;
   uint8_t ota_features;
   (void) ota_features;
-#ifdef USE_PM
-  pm::PMLock pm_;
-#endif
 
 
 
@@ -75,7 +72,7 @@ void OTAComponent::handle_() {
       return;
   }
 #ifdef USE_PM
-  pm_.request();
+  pm::global_pm->disable();
 #endif
 
   // enable nodelay for outgoing data
@@ -313,7 +310,7 @@ error:
   global_preferences.prevent_write(false);
 #endif
 #ifdef USE_PM
-  pm_.unrequest();
+  pm::global_pm->setup();
 #endif
 }
 
