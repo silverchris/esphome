@@ -238,6 +238,9 @@ def to_code(config):
     # Libraries
     if CORE.is_esp32:
         cg.add_library('ESPmDNS', None)
+        cg.add_build_flag('-DARDUINO_ARCH_ESP32')
+        cg.add_build_flag('-DESP32')
+        cg.add_build_flag('-Werror=reorder')
     elif CORE.is_esp8266:
         cg.add_library('ESP8266WiFi', None)
         cg.add_library('ESP8266mDNS', None)

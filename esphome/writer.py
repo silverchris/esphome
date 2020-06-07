@@ -289,8 +289,7 @@ def write_sdkconfig_defaults():
 def write_sdkconfig():
     update_storage_json()
     src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'core'))
-    copy_file_if_changed(os.path.join(src_path, "sdkconfig.h"), CORE.relative_src_path('sdkconfig.h'))
-    copy_file_if_changed(os.path.join(src_path, "sdkconfig"), CORE.relative_src_path('sdkconfig'))
+    copy_file_if_changed(os.path.join(src_path, "sdkconfig.defaults"), CORE.relative_build_path('sdkconfig.defaults'))
 
 
 def write_platformio_project():
