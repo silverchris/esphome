@@ -20,7 +20,12 @@ class EasyScale : public output::FloatOutput, public Component {
  protected:
   GPIOPin *pin_;
   float duty_{0.0f};
-  uint8_t device_address_ = 72;
+  uint8_t device_address_ = 0x72;
+
+ private:
+  void sendlow();
+  void sendhigh();
+  uint8_t last_state;
 };
 
 }  // namespace easyscale

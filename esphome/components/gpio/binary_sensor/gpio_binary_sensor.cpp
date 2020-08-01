@@ -1,6 +1,8 @@
 #include "gpio_binary_sensor.h"
 #include "esphome/core/log.h"
 
+#include "driver/gpio.h"
+
 namespace esphome {
 namespace gpio {
 
@@ -9,6 +11,9 @@ static const char *TAG = "gpio.binary_sensor";
 void GPIOBinarySensor::setup() {
   this->pin_->setup();
   this->publish_initial_state(this->pin_->digital_read());
+#ifdef USE_PM
+  gpio_wakeup_enable(this->pin_->get_pin(), GPIO_INTR_LOW_LEVEL);
+#endif
 }
 
 void GPIOBinarySensor::dump_config() {

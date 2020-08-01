@@ -8,6 +8,10 @@
 #include "light_traits.h"
 #include "light_transformer.h"
 
+#ifdef USE_PM
+#include "esphome/components/pm/pm.h"
+#endif
+
 namespace esphome {
 namespace light {
 
@@ -325,6 +329,11 @@ class LightState : public Nameable, public Component {
   float gamma_correct_{};
   /// List of effects for this light.
   std::vector<LightEffect *> effects_;
+
+#ifdef USE_PM
+  pm::PMLock pm_;
+#endif
+
 };
 
 }  // namespace light

@@ -148,7 +148,13 @@ void LightState::loop() {
       if (this->transformer_->publish_at_end())
         this->publish_state();
       this->transformer_ = nullptr;
+#ifdef USE_PM
+      this->pm_.unrequest();
+#endif
     } else {
+#ifdef USE_PM
+      this->pm_.request();
+#endif
       this->current_values = this->transformer_->get_values();
       this->remote_values = this->transformer_->get_remote_values();
     }

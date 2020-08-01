@@ -279,13 +279,13 @@ def write_platformio_ini(content):
     full_file += INI_AUTO_GENERATE_END + content_format[1]
     write_file_if_changed(path, full_file)
 
-def write_sdkconfig_defaults():
-    update_storage_json()
-    dest = CORE.relative_build_path('sdkconfig.defaults')
-    src = os.path.join(CORE.relative_src_path('esphome'), "sdkconfig.defaults")
-    copy_file_if_changed(src, dest)
-
-
+# def write_sdkconfig_defaults():
+#     update_storage_json()
+#     dest = CORE.relative_build_path('sdkconfig.defaults')
+#     src = os.path.join(CORE.relative_src_path('esphome'), "sdkconfig.defaults")
+#     copy_file_if_changed(src, dest)
+#
+#
 def write_sdkconfig():
     update_storage_json()
     src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'core'))

@@ -1,7 +1,7 @@
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
 
-#include "rom/ets_sys.h"
+#include "esp32/rom/ets_sys.h"
 #include <esp32-hal.h>
 
 #include "easyscale.h"
@@ -13,15 +13,36 @@ static const char *TAG = "EasyScale";
 
 void EasyScale::setup() {
   this->pin_->setup();
-  this->pin_->digital_write(true);
-  ets_delay_us(100);
-  this->pin_->digital_write(false);
-  ets_delay_us(260);
-  this->pin_->digital_write(true);
+
+  noInterrupts();
+  // reset the chip, by holding the control line low.
+  this->pin_->digital_write(LOW);
+  delay(1000);
+
+  this->pin_->digital_write(HIGH);
+  ets_delay_us(200);
+  this->pin_->digital_write(LOW);
+  ets_delay_us(500);
+  this->pin_->digital_write(HIGH);
+  interrupts();
 
 #ifdef USE_PM
   gpio_hold_en((gpio_num_t) this->pin_->get_pin());
 #endif
+}
+
+void EasyScale::sendlow() {
+  this->pin_->digital_write(LOW);
+  ets_delay_us(80);
+  this->pin_->digital_write(HIGH);
+  ets_delay_us(20);
+}
+
+void EasyScale::sendhigh() {
+  this->pin_->digital_write(LOW);
+  ets_delay_us(20);
+  this->pin_->digital_write(HIGH);
+  ets_delay_us(80);
 }
 
 void EasyScale::write_state(float state) {
@@ -35,30 +56,45 @@ void EasyScale::write_state(float state) {
   }
 #endif
 
-  float adjusted_value = (state * (this->max_power_ - this->min_power_)) + this->min_power_;
-  if (this->is_inverted())
-    adjusted_value = 1.0f - adjusted_value;
-
-#ifdef USE_PM
-  gpio_hold_dis((gpio_num_t) this->pin_->get_pin());
-#endif
-  for (uint8_t i = 0; i < 8; i++) {
-    this->pin_->digital_write((this->device_address_ >> i) & 1);
-  }
   uint8_t out = (31 / 1 * state) + 0.5;
-  for (int i = 4; i >= 0; i--) {
-    this->pin_->digital_write((out >> i) & 1);
-  }
-
-  this->pin_->digital_write(false);
-  ets_delay_us(100);
-  this->pin_->digital_write(true);
-  ets_delay_us(10);
-
-
+  if (out != this->last_state) {
 #ifdef USE_PM
-  gpio_hold_en((gpio_num_t) this->pin_->get_pin());
+    gpio_hold_dis((gpio_num_t) this->pin_->get_pin());
 #endif
+    noInterrupts();
+    for (int i = 7; i >= 0; i--) {
+      if ((this->device_address_ >> i) & 1) {
+        this->sendhigh();
+      } else {
+        this->sendlow();
+      }
+    }
+    this->pin_->digital_write(LOW);
+    ets_delay_us(10);
+    this->pin_->digital_write(HIGH);
+    ets_delay_us(10);
+
+    this->sendlow();
+    this->sendlow();
+    this->sendlow();
+
+    for (int i = 4; i >= 0; i--) {
+      if ((out >> i) & 1) {
+        this->sendhigh();
+      } else {
+        this->sendlow();
+      }
+    }
+    this->last_state = out;
+    this->pin_->digital_write(LOW);
+    ets_delay_us(100);
+    this->pin_->digital_write(HIGH);
+    ets_delay_us(10);
+    interrupts();
+#ifdef USE_PM
+    gpio_hold_en((gpio_num_t) this->pin_->get_pin());
+#endif
+  }
 }
 
 }  // namespace easyscale

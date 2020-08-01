@@ -26,7 +26,7 @@ uint8_t OTA_VERSION_1_0 = 1;
 void OTAComponent::setup() {
   this->server_ = new WiFiServer(this->port_);
   this->server_->begin();
-
+  this->server_->setTimeout(5);
   this->dump_config();
 }
 void OTAComponent::dump_config() {
@@ -74,6 +74,8 @@ void OTAComponent::handle_() {
 #ifdef USE_PM
   pm::global_pm->disable();
 #endif
+
+
 
   // enable nodelay for outgoing data
   this->client_.setNoDelay(true);

@@ -6,6 +6,8 @@
 #include "freertos/task.h"
 
 #include "esp_pm.h"
+#include "esp_sleep.h"
+
 
 
 #include "pm.h"
@@ -34,10 +36,13 @@ void PM::setup() {
   ESP_LOGI(TAG, "Tickless Idle Support Disabled");
 #endif
   ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+
+  esp_sleep_enable_gpio_wakeup();
+
 #else
   ESP_LOGI(TAG, "PM Support Disabled");
 #endif  // CONFIG_PM_ENABLE
-  App.set_loop_interval(250);
+  App.set_loop_interval(200);
   global_pm = this;
 }
 
@@ -68,6 +73,7 @@ void PMLock::request() {
     esp_pm_lock_acquire(this->pm_lock_);
     this->requested = true;
   }
+  App.set_loop_interval(16);
 #endif
 }
 
@@ -77,6 +83,7 @@ void PMLock::unrequest() {
     esp_pm_lock_release(this->pm_lock_);
     this->requested = false;
   }
+  App.set_loop_interval(200);
 #endif
 }
 
